@@ -16,8 +16,8 @@ class CartpoleTD3RunnerCfg(RslRlOffPolicyRunnerCfg):
     experiment_name = "cartpole_direct_td3"
 
     # Off-policy specific parameters
-    random_steps = 1000
-    gradient_steps = 1
+    random_steps = 500
+    gradient_steps = 20
 
     policy = RslRlTd3ActorCriticCfg(
         actor_obs_normalization=False,

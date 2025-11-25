@@ -16,8 +16,8 @@ class AntTD3RunnerCfg(RslRlOffPolicyRunnerCfg):
     experiment_name = "ant_direct_td3"
 
     # Off-policy specific parameters
-    random_steps = 10000
-    gradient_steps = 1
+    random_steps = 2000
+    gradient_steps = 20
 
     policy = RslRlTd3ActorCriticCfg(
         actor_obs_normalization=False,

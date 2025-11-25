@@ -22,12 +22,12 @@ class FrankaLiftCubeTD3RunnerCfg(RslRlOffPolicyRunnerCfg):
     save_interval = 500
     experiment_name = "franka_lift_cube_td3"
 
-    random_steps = 5000
-    gradient_steps = 1
+    random_steps = 2000
+    gradient_steps = 20
 
     policy = RslRlTd3ActorCriticCfg(
-        actor_obs_normalization=True,
-        critic_obs_normalization=True,
+        actor_obs_normalization=False,
+        critic_obs_normalization=False,
         actor_hidden_dims=[256, 256, 128],
         critic_hidden_dims=[256, 256, 128],
         activation="elu",
@@ -57,12 +57,12 @@ class FrankaLiftCubeFastTD3RunnerCfg(RslRlOffPolicyRunnerCfg):
     save_interval = 500
     experiment_name = "franka_lift_cube_fast_td3"
 
-    random_steps = 5000
-    gradient_steps = 2
+    random_steps = 2000
+    gradient_steps = 40
 
     policy = RslRlTd3ActorCriticCfg(
-        actor_obs_normalization=True,
-        critic_obs_normalization=True,
+        actor_obs_normalization=False,
+        critic_obs_normalization=False,
         actor_hidden_dims=[256, 256, 128],
         critic_hidden_dims=[256, 256, 128],
         activation="elu",

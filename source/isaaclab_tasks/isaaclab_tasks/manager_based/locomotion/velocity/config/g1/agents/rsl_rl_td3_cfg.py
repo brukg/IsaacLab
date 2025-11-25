@@ -18,16 +18,16 @@ class G1RoughTD3RunnerCfg(RslRlOffPolicyRunnerCfg):
     """TD3 configuration for Unitree G1 humanoid on rough terrain."""
 
     num_steps_per_env = 1
-    max_iterations = 25000
+    max_iterations = 3000
     save_interval = 500
     experiment_name = "g1_rough_td3"
 
-    random_steps = 10000
-    gradient_steps = 1
+    random_steps = 2000
+    gradient_steps = 20
 
     policy = RslRlTd3ActorCriticCfg(
-        actor_obs_normalization=True,
-        critic_obs_normalization=True,
+        actor_obs_normalization=False,
+        critic_obs_normalization=False,
         actor_hidden_dims=[512, 256, 128],
         critic_hidden_dims=[512, 256, 128],
         activation="elu",
@@ -53,16 +53,16 @@ class G1FlatTD3RunnerCfg(RslRlOffPolicyRunnerCfg):
     """TD3 configuration for Unitree G1 humanoid on flat terrain."""
 
     num_steps_per_env = 1
-    max_iterations = 15000
+    max_iterations = 3000
     save_interval = 500
     experiment_name = "g1_flat_td3"
 
-    random_steps = 5000
-    gradient_steps = 1
+    random_steps = 2000
+    gradient_steps = 20
 
     policy = RslRlTd3ActorCriticCfg(
-        actor_obs_normalization=True,
-        critic_obs_normalization=True,
+        actor_obs_normalization=False,
+        critic_obs_normalization=False,
         actor_hidden_dims=[256, 256, 128],
         critic_hidden_dims=[256, 256, 128],
         activation="elu",
@@ -88,16 +88,16 @@ class G1RoughFastTD3RunnerCfg(RslRlOffPolicyRunnerCfg):
     """FastTD3 configuration for Unitree G1 humanoid on rough terrain."""
 
     num_steps_per_env = 1
-    max_iterations = 20000
+    max_iterations = 3000
     save_interval = 500
     experiment_name = "g1_rough_fast_td3"
 
-    random_steps = 10000
-    gradient_steps = 2
+    random_steps = 2000
+    gradient_steps = 40
 
     policy = RslRlTd3ActorCriticCfg(
-        actor_obs_normalization=True,
-        critic_obs_normalization=True,
+        actor_obs_normalization=False,
+        critic_obs_normalization=False,
         actor_hidden_dims=[512, 256, 128],
         critic_hidden_dims=[512, 256, 128],
         activation="elu",
@@ -113,7 +113,7 @@ class G1RoughFastTD3RunnerCfg(RslRlOffPolicyRunnerCfg):
         policy_delay=1,
         max_grad_norm=1.0,
         replay_buffer_size=1000000,
-        batch_size=1024,
+        batch_size=4096,
         exploration_noise=0.1,
         num_critic_updates=2,
     )
@@ -124,16 +124,16 @@ class G1FlatFastTD3RunnerCfg(RslRlOffPolicyRunnerCfg):
     """FastTD3 configuration for Unitree G1 humanoid on flat terrain."""
 
     num_steps_per_env = 1
-    max_iterations = 12000
+    max_iterations = 3000
     save_interval = 500
     experiment_name = "g1_flat_fast_td3"
 
-    random_steps = 5000
-    gradient_steps = 2
+    random_steps = 2000
+    gradient_steps = 40
 
     policy = RslRlTd3ActorCriticCfg(
-        actor_obs_normalization=True,
-        critic_obs_normalization=True,
+        actor_obs_normalization=False,
+        critic_obs_normalization=False,
         actor_hidden_dims=[256, 256, 128],
         critic_hidden_dims=[256, 256, 128],
         activation="elu",

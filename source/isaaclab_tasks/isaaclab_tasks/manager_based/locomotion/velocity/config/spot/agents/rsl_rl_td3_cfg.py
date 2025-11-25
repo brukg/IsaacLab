@@ -23,12 +23,12 @@ class SpotFlatTD3RunnerCfg(RslRlOffPolicyRunnerCfg):
     experiment_name = "spot_flat_td3"
     store_code_state = False
 
-    random_steps = 10000
-    gradient_steps = 1
+    random_steps = 2000
+    gradient_steps = 20
 
     policy = RslRlTd3ActorCriticCfg(
-        actor_obs_normalization=True,
-        critic_obs_normalization=True,
+        actor_obs_normalization=False,
+        critic_obs_normalization=False,
         actor_hidden_dims=[512, 256, 128],
         critic_hidden_dims=[512, 256, 128],
         activation="elu",
@@ -59,12 +59,12 @@ class SpotFlatFastTD3RunnerCfg(RslRlOffPolicyRunnerCfg):
     experiment_name = "spot_flat_fast_td3"
     store_code_state = False
 
-    random_steps = 10000
-    gradient_steps = 2
+    random_steps = 2000
+    gradient_steps = 40
 
     policy = RslRlTd3ActorCriticCfg(
-        actor_obs_normalization=True,
-        critic_obs_normalization=True,
+        actor_obs_normalization=False,
+        critic_obs_normalization=False,
         actor_hidden_dims=[512, 256, 128],
         critic_hidden_dims=[512, 256, 128],
         activation="elu",

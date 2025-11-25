@@ -22,8 +22,8 @@ class AnymalCFlatTD3RunnerCfg(RslRlOffPolicyRunnerCfg):
     save_interval = 200
     experiment_name = "anymal_c_flat_direct_td3"
 
-    random_steps = 5000
-    gradient_steps = 1
+    random_steps = 2000
+    gradient_steps = 20
 
     policy = RslRlTd3ActorCriticCfg(
         actor_obs_normalization=False,
@@ -57,8 +57,8 @@ class AnymalCRoughTD3RunnerCfg(RslRlOffPolicyRunnerCfg):
     save_interval = 200
     experiment_name = "anymal_c_rough_direct_td3"
 
-    random_steps = 10000
-    gradient_steps = 1
+    random_steps = 2000
+    gradient_steps = 20
 
     policy = RslRlTd3ActorCriticCfg(
         actor_obs_normalization=False,
@@ -92,8 +92,8 @@ class AnymalCFlatFastTD3RunnerCfg(RslRlOffPolicyRunnerCfg):
     save_interval = 200
     experiment_name = "anymal_c_flat_direct_fast_td3"
 
-    random_steps = 5000
-    gradient_steps = 2
+    random_steps = 2000
+    gradient_steps = 40
 
     policy = RslRlTd3ActorCriticCfg(
         actor_obs_normalization=False,
@@ -128,8 +128,8 @@ class AnymalCRoughFastTD3RunnerCfg(RslRlOffPolicyRunnerCfg):
     save_interval = 200
     experiment_name = "anymal_c_rough_direct_fast_td3"
 
-    random_steps = 10000
-    gradient_steps = 2
+    random_steps = 2000
+    gradient_steps = 40
 
     policy = RslRlTd3ActorCriticCfg(
         actor_obs_normalization=False,

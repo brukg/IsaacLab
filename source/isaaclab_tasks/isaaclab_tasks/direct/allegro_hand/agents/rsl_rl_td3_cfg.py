@@ -22,8 +22,8 @@ class AllegroHandTD3RunnerCfg(RslRlOffPolicyRunnerCfg):
     save_interval = 500
     experiment_name = "allegro_hand_td3"
 
-    random_steps = 10000
-    gradient_steps = 1
+    random_steps = 2000
+    gradient_steps = 20
 
     policy = RslRlTd3ActorCriticCfg(
         actor_obs_normalization=False,
@@ -57,8 +57,8 @@ class AllegroHandFastTD3RunnerCfg(RslRlOffPolicyRunnerCfg):
     save_interval = 500
     experiment_name = "allegro_hand_fast_td3"
 
-    random_steps = 10000
-    gradient_steps = 2
+    random_steps = 2000
+    gradient_steps = 40
 
     policy = RslRlTd3ActorCriticCfg(
         actor_obs_normalization=False,
