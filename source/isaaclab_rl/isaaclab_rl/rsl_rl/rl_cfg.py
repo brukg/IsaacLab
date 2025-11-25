@@ -64,6 +64,29 @@ class RslRlPpoActorCriticRecurrentCfg(RslRlPpoActorCriticCfg):
     """The number of RNN layers."""
 
 
+@configclass
+class RslRlTd3ActorCriticCfg:
+    """Configuration for the TD3 actor-critic networks."""
+
+    class_name: str = "TD3ActorCritic"
+    """The policy class name. Default is TD3ActorCritic."""
+
+    actor_obs_normalization: bool = MISSING
+    """Whether to normalize the observation for the actor network."""
+
+    critic_obs_normalization: bool = MISSING
+    """Whether to normalize the observation for the critic network."""
+
+    actor_hidden_dims: list[int] = MISSING
+    """The hidden dimensions of the actor network."""
+
+    critic_hidden_dims: list[int] = MISSING
+    """The hidden dimensions of the critic network."""
+
+    activation: str = MISSING
+    """The activation function for the actor and critic networks."""
+
+
 ############################
 # Algorithm configurations #
 ############################
@@ -124,6 +147,65 @@ class RslRlPpoAlgorithmCfg:
 
     symmetry_cfg: RslRlSymmetryCfg | None = None
     """The symmetry configuration. Default is None, in which case symmetry is not used."""
+
+
+@configclass
+class RslRlTd3AlgorithmCfg:
+    """Configuration for the TD3 algorithm."""
+
+    class_name: str = "TD3"
+    """The algorithm class name. Default is TD3."""
+
+    learning_rate_actor: float = MISSING
+    """The learning rate for the actor network."""
+
+    learning_rate_critic: float = MISSING
+    """The learning rate for the critic networks."""
+
+    gamma: float = MISSING
+    """The discount factor."""
+
+    tau: float = MISSING
+    """The soft update coefficient for target networks."""
+
+    policy_noise: float = MISSING
+    """Standard deviation of Gaussian noise added to target policy during critic update."""
+
+    noise_clip: float = MISSING
+    """Range to clip target policy noise."""
+
+    policy_delay: int = MISSING
+    """Frequency of delayed policy updates."""
+
+    max_grad_norm: float = MISSING
+    """The maximum gradient norm."""
+
+    replay_buffer_size: int = MISSING
+    """The size of the replay buffer."""
+
+    batch_size: int = MISSING
+    """The batch size for training."""
+
+    exploration_noise: float = MISSING
+    """Standard deviation of exploration noise added to actions during data collection."""
+
+
+@configclass
+class RslRlFastTd3AlgorithmCfg(RslRlTd3AlgorithmCfg):
+    """Configuration for the FastTD3 algorithm.
+
+    FastTD3 is a variant of TD3 with optimized update frequency and reduced policy delay
+    for faster learning in certain environments.
+    """
+
+    class_name: str = "FastTD3"
+    """The algorithm class name. Default is FastTD3."""
+
+    policy_delay: int = 1
+    """Frequency of delayed policy updates. Default is 1 for FastTD3 (faster than standard TD3)."""
+
+    num_critic_updates: int = MISSING
+    """Number of critic updates per environment step."""
 
 
 #########################
@@ -236,3 +318,23 @@ class RslRlOnPolicyRunnerCfg(RslRlBaseRunnerCfg):
 
     algorithm: RslRlPpoAlgorithmCfg = MISSING
     """The algorithm configuration."""
+
+
+@configclass
+class RslRlOffPolicyRunnerCfg(RslRlBaseRunnerCfg):
+    """Configuration of the runner for off-policy algorithms."""
+
+    class_name: str = "OffPolicyRunner"
+    """The runner class name. Default is OffPolicyRunner."""
+
+    policy: RslRlTd3ActorCriticCfg = MISSING
+    """The policy configuration."""
+
+    algorithm: RslRlTd3AlgorithmCfg = MISSING
+    """The algorithm configuration."""
+
+    random_steps: int = MISSING
+    """Number of random exploration steps before using policy."""
+
+    gradient_steps: int = MISSING
+    """Number of gradient steps per environment step."""

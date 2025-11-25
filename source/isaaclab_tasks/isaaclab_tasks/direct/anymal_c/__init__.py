@@ -23,6 +23,8 @@ gym.register(
         "env_cfg_entry_point": f"{__name__}.anymal_c_env_cfg:AnymalCFlatEnvCfg",
         "rl_games_cfg_entry_point": f"{agents.__name__}:rl_games_flat_ppo_cfg.yaml",
         "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:AnymalCFlatPPORunnerCfg",
+        "rsl_rl_td3_cfg_entry_point": f"{agents.__name__}.rsl_rl_td3_cfg:AnymalCFlatTD3RunnerCfg",
+        "rsl_rl_fast_td3_cfg_entry_point": f"{agents.__name__}.rsl_rl_td3_cfg:AnymalCFlatFastTD3RunnerCfg",
         "skrl_cfg_entry_point": f"{agents.__name__}:skrl_flat_ppo_cfg.yaml",
     },
 )
@@ -35,6 +37,8 @@ gym.register(
         "env_cfg_entry_point": f"{__name__}.anymal_c_env_cfg:AnymalCRoughEnvCfg",
         "rl_games_cfg_entry_point": f"{agents.__name__}:rl_games_rough_ppo_cfg.yaml",
         "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:AnymalCRoughPPORunnerCfg",
+        "rsl_rl_td3_cfg_entry_point": f"{agents.__name__}.rsl_rl_td3_cfg:AnymalCRoughTD3RunnerCfg",
+        "rsl_rl_fast_td3_cfg_entry_point": f"{agents.__name__}.rsl_rl_td3_cfg:AnymalCRoughFastTD3RunnerCfg",
         "skrl_cfg_entry_point": f"{agents.__name__}:skrl_rough_ppo_cfg.yaml",
     },
 )

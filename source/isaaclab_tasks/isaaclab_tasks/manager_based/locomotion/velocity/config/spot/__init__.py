@@ -18,6 +18,8 @@ gym.register(
     kwargs={
         "env_cfg_entry_point": f"{__name__}.flat_env_cfg:SpotFlatEnvCfg",
         "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:SpotFlatPPORunnerCfg",
+        "rsl_rl_td3_cfg_entry_point": f"{agents.__name__}.rsl_rl_td3_cfg:SpotFlatTD3RunnerCfg",
+        "rsl_rl_fast_td3_cfg_entry_point": f"{agents.__name__}.rsl_rl_td3_cfg:SpotFlatFastTD3RunnerCfg",
         "skrl_cfg_entry_point": f"{agents.__name__}:skrl_flat_ppo_cfg.yaml",
     },
 )
