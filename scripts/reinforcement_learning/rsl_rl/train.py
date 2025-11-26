@@ -93,7 +93,7 @@ from isaaclab.envs import (
 from isaaclab.utils.dict import print_dict
 from isaaclab.utils.io import dump_yaml
 
-from isaaclab_rl.rsl_rl import RslRlBaseRunnerCfg, RslRlVecEnvWrapper
+from isaaclab_rl.rsl_rl import RslRlBaseRunnerCfg, RslRlVecEnvWrapper, RslRlVecEnvHistoryWrapper
 
 import isaaclab_tasks  # noqa: F401
 from isaaclab_tasks.utils import get_checkpoint_path
@@ -188,11 +188,29 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
         env = gym.wrappers.RecordVideo(env, **video_kwargs)
 
     # wrap around environment for rsl-rl
-    env = RslRlVecEnvWrapper(env, clip_actions=agent_cfg.clip_actions)
+    # Use history wrapper if OnPolicyRunnerHistory is selected or if using ActorCriticHistory policy
+    use_history_wrapper = False
+    if agent_cfg.class_name == "OnPolicyRunnerHistory":
+        use_history_wrapper = True
+    elif hasattr(agent_cfg, "policy") and hasattr(agent_cfg.policy, "class_name"):
+        # Check if policy uses history (ActorCriticHistory)
+        if "History" in agent_cfg.policy.class_name:
+            use_history_wrapper = True
+
+    if use_history_wrapper:
+        # Get history length from policy config if available
+        history_length = getattr(agent_cfg.policy, "history_length", 10)
+        print(f"[INFO] Using RslRlVecEnvHistoryWrapper with history_length={history_length}")
+        env = RslRlVecEnvHistoryWrapper(env, history_length=history_length)
+    else:
+        env = RslRlVecEnvWrapper(env, clip_actions=agent_cfg.clip_actions)
 
     # create runner from rsl-rl
     if agent_cfg.class_name == "OnPolicyRunner":
         runner = OnPolicyRunner(env, agent_cfg.to_dict(), log_dir=log_dir, device=agent_cfg.device)
+    elif agent_cfg.class_name == "OnPolicyRunnerHistory":
+        from rsl_rl.runners import OnPolicyRunnerHistory
+        runner = OnPolicyRunnerHistory(env, agent_cfg.to_dict(), log_dir=log_dir, device=agent_cfg.device)
     elif agent_cfg.class_name == "DistillationRunner":
         runner = DistillationRunner(env, agent_cfg.to_dict(), log_dir=log_dir, device=agent_cfg.device)
     elif agent_cfg.class_name == "OffPolicyRunner":

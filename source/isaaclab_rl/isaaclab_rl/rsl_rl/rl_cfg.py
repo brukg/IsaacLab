@@ -87,6 +87,63 @@ class RslRlTd3ActorCriticCfg:
     """The activation function for the actor and critic networks."""
 
 
+@configclass
+class RslRlActorCriticHistoryCfg(RslRlPpoActorCriticCfg):
+    """Configuration for actor-critic networks with observation history."""
+
+    class_name: str = "ActorCriticHistory"
+    """The policy class name. Default is ActorCriticHistory."""
+
+
+@configclass
+class RslRlActorCriticDepthCNNCfg:
+    """Configuration for actor-critic networks with depth camera observations."""
+
+    class_name: str = "ActorCriticDepthCNN"
+    """The policy class name. Default is ActorCriticDepthCNN."""
+
+    init_noise_std: float = MISSING
+    """The initial noise standard deviation for the policy."""
+
+    actor_hidden_dims: list[int] = MISSING
+    """The hidden dimensions of the actor network."""
+
+    critic_hidden_dims: list[int] = MISSING
+    """The hidden dimensions of the critic network."""
+
+    activation: str = MISSING
+    """The activation function for the actor and critic networks."""
+
+    num_actor_obs_prop: int = 48
+    """Number of proprioceptive observations (without depth). Default is 48."""
+
+    obs_depth_shape: tuple[int, int] = (53, 30)
+    """Shape of depth observations (height, width). Default is (53, 30) to match legged-loco."""
+
+
+@configclass
+class RslRlActorCriticDepthCNNRecurrentCfg(RslRlActorCriticDepthCNNCfg):
+    """Configuration for actor-critic networks with depth camera and recurrent layers."""
+
+    class_name: str = "ActorCriticDepthCNNRecurrent"
+    """The policy class name. Default is ActorCriticDepthCNNRecurrent."""
+
+    rnn_type: str = "lstm"
+    """The type of RNN to use. Either 'lstm' or 'gru'. Default is 'lstm'."""
+
+    rnn_input_size: int = 256
+    """The input size for the RNN. Default is 256."""
+
+    rnn_hidden_size: int = 256
+    """The hidden size for the RNN. Default is 256."""
+
+    rnn_num_layers: int = 1
+    """The number of RNN layers. Default is 1."""
+
+    num_critic_obs_prop: int = 48
+    """Number of critic proprioceptive observations (without depth). Default is 48."""
+
+
 ############################
 # Algorithm configurations #
 ############################
@@ -318,6 +375,17 @@ class RslRlOnPolicyRunnerCfg(RslRlBaseRunnerCfg):
 
     algorithm: RslRlPpoAlgorithmCfg = MISSING
     """The algorithm configuration."""
+
+
+@configclass
+class RslRlOnPolicyRunnerHistoryCfg(RslRlOnPolicyRunnerCfg):
+    """Configuration of the runner for on-policy algorithms with observation history."""
+
+    class_name: str = "OnPolicyRunnerHistory"
+    """The runner class name. Default is OnPolicyRunnerHistory."""
+
+    policy: RslRlActorCriticHistoryCfg = MISSING
+    """The policy configuration."""
 
 
 @configclass

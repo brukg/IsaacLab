@@ -65,3 +65,29 @@ gym.register(
         "skrl_cfg_entry_point": f"{agents.__name__}:skrl_flat_ppo_cfg.yaml",
     },
 )
+
+
+##
+# Vision-enabled environments with depth camera
+##
+
+gym.register(
+    id="Isaac-Velocity-Rough-G1-Vision-v0",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.rough_vision_env_cfg:G1RoughVisionEnvCfg",
+        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_depth_cnn_cfg:G1RoughDepthCNNRunnerCfg",
+    },
+)
+
+
+gym.register(
+    id="Isaac-Velocity-Rough-G1-Vision-Play-v0",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.rough_vision_env_cfg:G1RoughVisionEnvCfg_PLAY",
+        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_depth_cnn_cfg:G1RoughDepthCNNRunnerCfg",
+    },
+)

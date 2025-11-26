@@ -37,6 +37,16 @@ def add_rsl_rl_args(parser: argparse.ArgumentParser):
     arg_group.add_argument(
         "--log_project_name", type=str, default=None, help="Name of the logging project when using wandb or neptune."
     )
+    # -- observation arguments
+    arg_group.add_argument(
+        "--use_cnn", action="store_true", default=False, help="Use depth CNN for observations."
+    )
+    arg_group.add_argument(
+        "--use_rnn", action="store_true", default=False, help="Use recurrent policy (LSTM/GRU)."
+    )
+    arg_group.add_argument(
+        "--history_length", type=int, default=10, help="Number of timesteps of observation history to maintain."
+    )
 
 
 def parse_rsl_rl_cfg(task_name: str, args_cli: argparse.Namespace) -> RslRlBaseRunnerCfg:
@@ -87,5 +97,67 @@ def update_rsl_rl_cfg(agent_cfg: RslRlBaseRunnerCfg, args_cli: argparse.Namespac
     if agent_cfg.logger in {"wandb", "neptune"} and args_cli.log_project_name:
         agent_cfg.wandb_project = args_cli.log_project_name
         agent_cfg.neptune_project = args_cli.log_project_name
+
+    # handle depth CNN and recurrent policy arguments
+    if hasattr(args_cli, "use_cnn") and args_cli.use_cnn:
+        # Switch to depth CNN policy
+        if hasattr(agent_cfg, "policy"):
+            from isaaclab_rl.rsl_rl import RslRlActorCriticDepthCNNCfg
+
+            # Extract current policy values
+            curr_policy = agent_cfg.policy
+            init_noise = curr_policy.init_noise_std if hasattr(curr_policy, "init_noise_std") else 1.0
+            actor_dims = list(curr_policy.actor_hidden_dims) if hasattr(curr_policy, "actor_hidden_dims") else [512, 256, 128]
+            critic_dims = list(curr_policy.critic_hidden_dims) if hasattr(curr_policy, "critic_hidden_dims") else [512, 256, 128]
+            act_fn = curr_policy.activation if hasattr(curr_policy, "activation") else "elu"
+            num_prop = curr_policy.num_actor_obs_prop if hasattr(curr_policy, "num_actor_obs_prop") else 48
+            depth_shape = curr_policy.obs_depth_shape if hasattr(curr_policy, "obs_depth_shape") else (24, 32)
+
+            # Create a new depth CNN config
+            agent_cfg.policy = RslRlActorCriticDepthCNNCfg(
+                class_name="ActorCriticDepthCNN",
+                init_noise_std=init_noise,
+                actor_hidden_dims=actor_dims,
+                critic_hidden_dims=critic_dims,
+                activation=act_fn,
+                num_actor_obs_prop=num_prop,
+                obs_depth_shape=depth_shape,
+            )
+
+    if hasattr(args_cli, "use_rnn") and args_cli.use_rnn:
+        # Switch to recurrent policy
+        if hasattr(agent_cfg, "policy"):
+            if hasattr(args_cli, "use_cnn") and args_cli.use_cnn:
+                # Depth CNN + Recurrent
+                from isaaclab_rl.rsl_rl import RslRlActorCriticDepthCNNRecurrentCfg
+
+                # Extract current policy values
+                curr_policy = agent_cfg.policy
+                init_noise = curr_policy.init_noise_std if hasattr(curr_policy, "init_noise_std") else 1.0
+                actor_dims = list(curr_policy.actor_hidden_dims) if hasattr(curr_policy, "actor_hidden_dims") else [512, 256, 128]
+                critic_dims = list(curr_policy.critic_hidden_dims) if hasattr(curr_policy, "critic_hidden_dims") else [512, 256, 128]
+                act_fn = curr_policy.activation if hasattr(curr_policy, "activation") else "elu"
+                num_actor_prop = curr_policy.num_actor_obs_prop if hasattr(curr_policy, "num_actor_obs_prop") else 48
+                depth_shape = curr_policy.obs_depth_shape if hasattr(curr_policy, "obs_depth_shape") else (24, 32)
+
+                agent_cfg.policy = RslRlActorCriticDepthCNNRecurrentCfg(
+                    class_name="ActorCriticDepthCNNRecurrent",
+                    init_noise_std=init_noise,
+                    actor_hidden_dims=actor_dims,
+                    critic_hidden_dims=critic_dims,
+                    activation=act_fn,
+                    rnn_type="lstm",
+                    rnn_input_size=256,
+                    rnn_hidden_size=256,
+                    rnn_num_layers=1,
+                    num_actor_obs_prop=num_actor_prop,
+                    num_critic_obs_prop=num_actor_prop,
+                    obs_depth_shape=depth_shape,
+                )
+            else:
+                # Just recurrent
+                agent_cfg.policy.class_name = "ActorCriticRecurrent"
+
+    # Note: history_length is used by the wrapper selection in train.py, not passed to policy config
 
     return agent_cfg

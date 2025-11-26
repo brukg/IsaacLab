@@ -201,7 +201,17 @@ class _OnnxPolicyExporter(torch.nn.Module):
             else:
                 raise NotImplementedError(f"Unsupported RNN type: {self.rnn_type}")
         else:
-            obs = torch.zeros(1, self.actor[0].in_features)
+            # Handle different actor architectures
+            if hasattr(self.actor, 'num_obs_proprio') and hasattr(self.actor, 'obs_depth_shape'):
+                # Custom depth CNN actor: proprio + depth image
+                input_size = self.actor.num_obs_proprio + (self.actor.obs_depth_shape[0] * self.actor.obs_depth_shape[1])
+            elif hasattr(self.actor, '__getitem__'):
+                # Standard Sequential actor
+                input_size = self.actor[0].in_features
+            else:
+                raise ValueError(f"Cannot determine input size for actor type: {type(self.actor)}")
+
+            obs = torch.zeros(1, input_size)
             torch.onnx.export(
                 self,
                 obs,
