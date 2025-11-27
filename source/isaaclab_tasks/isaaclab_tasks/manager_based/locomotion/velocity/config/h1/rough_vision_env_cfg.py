@@ -9,6 +9,8 @@ from isaaclab.managers import ObservationGroupCfg as ObsGroup
 from isaaclab.managers import ObservationTermCfg as ObsTerm
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.sensors.ray_caster import RayCasterCameraCfg, patterns
+import isaaclab.terrains as terrain_gen
+from isaaclab.terrains import TerrainGeneratorCfg
 from isaaclab.utils import configclass
 from isaaclab.utils.noise import AdditiveUniformNoiseCfg as Unoise
 
@@ -114,7 +116,11 @@ class H1VisionObservationsCfg:
 
 @configclass
 class H1RoughVisionEnvCfg(H1RoughEnvCfg):
-    """H1 rough terrain environment with depth camera support."""
+    """H1 rough terrain environment with depth camera support.
+
+    Matches legged-loco H1 vision configuration with challenging terrain including
+    1.5m tall obstacles for vision-based locomotion.
+    """
 
     # Override observations with vision-enabled configuration
     observations: H1VisionObservationsCfg = H1VisionObservationsCfg()
@@ -122,6 +128,71 @@ class H1RoughVisionEnvCfg(H1RoughEnvCfg):
     def __post_init__(self):
         # Post init of parent
         super().__post_init__()
+
+        # Override terrain with legged-loco H1 vision configuration
+        # Heavy emphasis on discrete obstacles for depth camera usage
+        self.scene.terrain.terrain_generator = TerrainGeneratorCfg(
+            size=(8.0, 8.0),
+            border_width=20.0,
+            num_rows=10,
+            num_cols=20,
+            horizontal_scale=0.1,
+            vertical_scale=0.005,
+            slope_threshold=0.75,
+            use_cache=False,
+            sub_terrains={
+                "pyramid_stairs": terrain_gen.MeshPyramidStairsTerrainCfg(
+                    proportion=0.15,  # Reduced from 0.2
+                    step_height_range=(0.05, 0.30),
+                    step_width=0.3,
+                    platform_width=3.0,
+                    border_width=1.0,
+                    holes=False,
+                ),
+                "pyramid_stairs_inv": terrain_gen.MeshInvertedPyramidStairsTerrainCfg(
+                    proportion=0.15,  # Reduced from 0.2
+                    step_height_range=(0.05, 0.30),
+                    step_width=0.3,
+                    platform_width=3.0,
+                    border_width=1.0,
+                    holes=False,
+                ),
+                # INCREASED: More box obstacles everywhere for depth camera
+                "boxes": terrain_gen.MeshRandomGridTerrainCfg(
+                    proportion=0.35,  # INCREASED from 0.2 to 0.35
+                    grid_width=0.45,
+                    grid_height_range=(0.05, 0.3),  # Slightly taller boxes
+                    platform_width=2.0,
+                ),
+                "random_rough": terrain_gen.HfRandomUniformTerrainCfg(
+                    proportion=0.05,  # Reduced from 0.2 to make room for boxes
+                    noise_range=(0.02, 0.10),
+                    noise_step=0.02,
+                    border_width=0.25,
+                ),
+                "hf_pyramid_slope": terrain_gen.HfPyramidSlopedTerrainCfg(
+                    proportion=0.05,  # Reduced from 0.1
+                    slope_range=(0.0, 0.4),
+                    platform_width=2.0,
+                    border_width=0.25,
+                ),
+                "hf_pyramid_slope_inv": terrain_gen.HfInvertedPyramidSlopedTerrainCfg(
+                    proportion=0.05,  # Reduced from 0.1
+                    slope_range=(0.0, 0.4),
+                    platform_width=2.0,
+                    border_width=0.25,
+                ),
+                # Giant 1.5m tall obstacles - keep at 20% for challenging areas
+                "init_pos": terrain_gen.HfDiscreteObstaclesTerrainCfg(
+                    proportion=0.4,
+                    obstacle_height_mode="choice",
+                    obstacle_height_range=(1.5, 1.5),  # 1.5m tall obstacles!
+                    obstacle_width_range=(0.3, 1.5),
+                    num_obstacles=900,  # Increased from 30 for more density
+                    platform_width=1.5,
+                ),
+            },
+        )
 
         # Add depth camera to scene
         if not hasattr(self.scene, 'depth_camera'):
