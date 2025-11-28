@@ -83,3 +83,29 @@ gym.register(
         "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_depth_cnn_cfg:H1RoughDepthCNNRunnerCfg",
     },
 )
+
+
+##
+# Vision-enabled environments with depth camera + RNN/LSTM
+##
+
+gym.register(
+    id="Isaac-Velocity-Rough-H1-Vision-RNN-v0",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.rough_vision_env_cfg:H1RoughVisionEnvCfg",
+        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_depth_cnn_rnn_cfg:H1RoughDepthCNNRecurrentRunnerCfg",
+    },
+)
+
+
+gym.register(
+    id="Isaac-Velocity-Rough-H1-Vision-RNN-Play-v0",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.rough_vision_env_cfg:H1RoughVisionEnvCfg_PLAY",
+        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_depth_cnn_rnn_cfg:H1RoughDepthCNNRecurrentRunnerCfg",
+    },
+)
