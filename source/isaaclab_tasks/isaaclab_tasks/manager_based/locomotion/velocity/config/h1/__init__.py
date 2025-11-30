@@ -109,3 +109,51 @@ gym.register(
         "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_depth_cnn_rnn_cfg:H1RoughDepthCNNRecurrentRunnerCfg",
     },
 )
+
+
+##
+# Vision + IMU sensor environments (realistic state estimation)
+##
+
+gym.register(
+    id="Isaac-Velocity-Rough-H1-Vision-IMU-v0",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.rough_vision_env_cfg:H1RoughVisionIMUEnvCfg",
+        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_depth_cnn_cfg:H1RoughDepthCNNRunnerCfg",
+    },
+)
+
+
+gym.register(
+    id="Isaac-Velocity-Rough-H1-Vision-IMU-Play-v0",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.rough_vision_env_cfg:H1RoughVisionIMUEnvCfg_PLAY",
+        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_depth_cnn_cfg:H1RoughDepthCNNRunnerCfg",
+    },
+)
+
+
+gym.register(
+    id="Isaac-Velocity-Rough-H1-Vision-IMU-RNN-v0",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.rough_vision_env_cfg:H1RoughVisionIMUEnvCfg",
+        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_depth_cnn_rnn_cfg:H1RoughDepthCNNRecurrentRunnerCfg",
+    },
+)
+
+
+gym.register(
+    id="Isaac-Velocity-Rough-H1-Vision-IMU-RNN-Play-v0",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.rough_vision_env_cfg:H1RoughVisionIMUEnvCfg_PLAY",
+        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_depth_cnn_rnn_cfg:H1RoughDepthCNNRecurrentRunnerCfg",
+    },
+)

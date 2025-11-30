@@ -8,6 +8,7 @@
 from isaaclab.managers import ObservationGroupCfg as ObsGroup
 from isaaclab.managers import ObservationTermCfg as ObsTerm
 from isaaclab.managers import SceneEntityCfg
+from isaaclab.sensors import ImuCfg
 from isaaclab.sensors.ray_caster import RayCasterCameraCfg, patterns
 import isaaclab.terrains as terrain_gen
 from isaaclab.terrains import TerrainGeneratorCfg
@@ -53,7 +54,7 @@ class H1VisionObservationsCfg:
     class PolicyCfg(ObsGroup):
         """Observations for policy group (all observations combined for critic/standard policies)."""
 
-        # Proprioceptive observations
+        # Proprioceptive observations (ground truth)
         base_lin_vel = ObsTerm(func=mdp.base_lin_vel, noise=Unoise(n_min=-0.1, n_max=0.1))
         base_ang_vel = ObsTerm(func=mdp.base_ang_vel, noise=Unoise(n_min=-0.2, n_max=0.2))
         projected_gravity = ObsTerm(
@@ -214,6 +215,14 @@ class H1RoughVisionEnvCfg(H1RoughEnvCfg):
                 max_distance=10.0,
             )
 
+        # Add IMU sensor to torso
+        if not hasattr(self.scene, 'imu'):
+            self.scene.imu = ImuCfg(
+                prim_path="{ENV_REGEX_NS}/Robot/torso_link",
+                update_period=0.0,  # Update every physics step
+                debug_vis=False,
+            )
+
 
 @configclass
 class H1RoughVisionEnvCfg_PLAY(H1RoughVisionEnvCfg):
@@ -230,6 +239,95 @@ class H1RoughVisionEnvCfg_PLAY(H1RoughVisionEnvCfg):
         # Spawn the robot randomly in the grid (instead of their terrain levels)
         self.scene.terrain.max_init_terrain_level = None
         # Reduce the number of terrains to save memory
+        if self.scene.terrain.terrain_generator is not None:
+            self.scene.terrain.terrain_generator.num_rows = 5
+            self.scene.terrain.terrain_generator.num_cols = 5
+            self.scene.terrain.terrain_generator.curriculum = False
+
+        self.commands.base_velocity.ranges.lin_vel_x = (1.0, 1.0)
+        self.commands.base_velocity.ranges.lin_vel_y = (0.0, 0.0)
+        self.commands.base_velocity.ranges.ang_vel_z = (-1.0, 1.0)
+        self.commands.base_velocity.ranges.heading = (0.0, 0.0)
+        # Disable randomization for play
+        self.observations.policy.enable_corruption = False
+        # Remove random pushing
+        self.events.base_external_force_torque = None
+        self.events.push_robot = None
+
+
+##
+# IMU Sensor Variant (for realistic state estimation)
+##
+
+
+@configclass
+class H1VisionIMUObservationsCfg(H1VisionObservationsCfg):
+    """Observation specifications for H1 with depth camera and IMU sensor."""
+
+    @configclass
+    class PolicyCfg(H1VisionObservationsCfg.PolicyCfg):
+        """Policy observations using IMU instead of ground truth."""
+
+        # Override ground truth with IMU observations
+        imu_ang_vel = ObsTerm(
+            func=mdp.imu_ang_vel,
+            params={"asset_cfg": SceneEntityCfg("imu")},
+            noise=Unoise(n_min=-0.1, n_max=0.1)
+        )
+        imu_gravity = ObsTerm(
+            func=mdp.imu_projected_gravity,
+            params={"asset_cfg": SceneEntityCfg("imu")},
+            noise=Unoise(n_min=-0.02, n_max=0.02)
+        )
+
+        # Remove ground truth observations
+        base_ang_vel: ObsTerm = None
+        projected_gravity: ObsTerm = None
+
+    @configclass
+    class ProprioceptionCfg(H1VisionObservationsCfg.ProprioceptionCfg):
+        """Proprioceptive observations using IMU."""
+
+        # Override with IMU
+        imu_ang_vel = ObsTerm(
+            func=mdp.imu_ang_vel,
+            params={"asset_cfg": SceneEntityCfg("imu")},
+            noise=Unoise(n_min=-0.1, n_max=0.1)
+        )
+        imu_gravity = ObsTerm(
+            func=mdp.imu_projected_gravity,
+            params={"asset_cfg": SceneEntityCfg("imu")},
+            noise=Unoise(n_min=-0.02, n_max=0.02)
+        )
+
+        # Remove ground truth
+        base_ang_vel: ObsTerm = None
+        projected_gravity: ObsTerm = None
+
+
+@configclass
+class H1RoughVisionIMUEnvCfg(H1RoughVisionEnvCfg):
+    """H1 rough terrain with depth camera and IMU sensor (realistic state estimation)."""
+
+    # Use IMU observations
+    observations: H1VisionIMUObservationsCfg = H1VisionIMUObservationsCfg()
+
+
+@configclass
+class H1RoughVisionIMUEnvCfg_PLAY(H1RoughVisionIMUEnvCfg):
+    """H1 rough terrain vision + IMU environment for playing (inference)."""
+
+    def __post_init__(self):
+        # Post init of parent
+        super().__post_init__()
+
+        # Make a smaller scene for play
+        self.scene.num_envs = 50
+        self.scene.env_spacing = 2.5
+        self.episode_length_s = 40.0
+        # Spawn the robot randomly in the grid
+        self.scene.terrain.max_init_terrain_level = None
+        # Reduce the number of terrains
         if self.scene.terrain.terrain_generator is not None:
             self.scene.terrain.terrain_generator.num_rows = 5
             self.scene.terrain.terrain_generator.num_cols = 5
