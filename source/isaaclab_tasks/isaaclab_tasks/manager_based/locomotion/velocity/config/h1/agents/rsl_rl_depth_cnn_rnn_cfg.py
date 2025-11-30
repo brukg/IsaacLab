@@ -19,7 +19,7 @@ class H1RoughDepthCNNRecurrentRunnerCfg(RslRlOnPolicyRunnerCfg):
     """Runner configuration for H1 with depth camera + RNN/LSTM using PPO."""
 
     num_steps_per_env = 12
-    max_iterations = 3000
+    max_iterations = 5000
     save_interval = 50
     experiment_name = "h1_rough_depth_cnn_rnn"
 

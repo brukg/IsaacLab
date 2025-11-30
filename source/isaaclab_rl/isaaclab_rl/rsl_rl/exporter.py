@@ -152,15 +152,29 @@ class _OnnxPolicyExporter(torch.nn.Module):
 
     def forward_lstm(self, x_in, h_in, c_in):
         x_in = self.normalizer(x_in)
+        # For depth CNN, encode observations first
+        if hasattr(self.actor, 'encode'):
+            x_in = self.actor.encode(x_in)
         x, (h, c) = self.rnn(x_in.unsqueeze(0), (h_in, c_in))
         x = x.squeeze(0)
-        return self.actor(x), h, c
+        # For depth CNN, use action_head directly (actor.forward expects full obs)
+        if hasattr(self.actor, 'action_head'):
+            return self.actor.action_head(x), h, c
+        else:
+            return self.actor(x), h, c
 
     def forward_gru(self, x_in, h_in):
         x_in = self.normalizer(x_in)
+        # For depth CNN, encode observations first
+        if hasattr(self.actor, 'encode'):
+            x_in = self.actor.encode(x_in)
         x, h = self.rnn(x_in.unsqueeze(0), h_in)
         x = x.squeeze(0)
-        return self.actor(x), h
+        # For depth CNN, use action_head directly (actor.forward expects full obs)
+        if hasattr(self.actor, 'action_head'):
+            return self.actor.action_head(x), h
+        else:
+            return self.actor(x), h
 
     def forward(self, x):
         return self.actor(self.normalizer(x))
@@ -170,7 +184,14 @@ class _OnnxPolicyExporter(torch.nn.Module):
         self.eval()
         opset_version = 18  # was 11, but it caused problems with linux-aarch, and 18 worked well across all systems.
         if self.is_recurrent:
-            obs = torch.zeros(1, self.rnn.input_size)
+            # For depth CNN + RNN, use full observation size, not RNN input size
+            if hasattr(self.actor, 'num_obs_proprio') and hasattr(self.actor, 'obs_depth_shape'):
+                # ActorDepthCNN: proprio + depth
+                obs_size = self.actor.num_obs_proprio + (self.actor.obs_depth_shape[0] * self.actor.obs_depth_shape[1])
+            else:
+                # Standard RNN: use RNN input size
+                obs_size = self.rnn.input_size
+            obs = torch.zeros(1, obs_size)
             h_in = torch.zeros(self.rnn.num_layers, 1, self.rnn.hidden_size)
 
             if self.rnn_type == "lstm":
