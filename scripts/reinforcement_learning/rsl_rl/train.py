@@ -28,6 +28,9 @@ parser.add_argument(
 parser.add_argument("--seed", type=int, default=None, help="Seed used for the environment")
 parser.add_argument("--max_iterations", type=int, default=None, help="RL Policy training iterations.")
 parser.add_argument(
+    "--low_level_policy", type=str, default=None, help="Path to pre-trained low-level policy for hierarchical navigation (e.g., logs/rsl_rl/h1_flat/exported/policy.pt)."
+)
+parser.add_argument(
     "--distributed", action="store_true", default=False, help="Run training with multiple GPUs or nodes."
 )
 parser.add_argument("--export_io_descriptors", action="store_true", default=False, help="Export IO descriptors.")
@@ -152,6 +155,12 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
     if agent_cfg.run_name:
         log_dir += f"_{agent_cfg.run_name}"
     log_dir = os.path.join(log_root_path, log_dir)
+
+    # override low-level policy path for hierarchical navigation tasks
+    if args_cli.low_level_policy is not None:
+        if hasattr(env_cfg, 'actions') and hasattr(env_cfg.actions, 'pre_trained_policy_action'):
+            env_cfg.actions.pre_trained_policy_action.policy_path = args_cli.low_level_policy
+            print(f"[INFO] Using low-level policy: {args_cli.low_level_policy}")
 
     # set the IO descriptors export flag if requested
     if isinstance(env_cfg, ManagerBasedRLEnvCfg):

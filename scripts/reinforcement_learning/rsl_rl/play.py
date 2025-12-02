@@ -34,6 +34,9 @@ parser.add_argument(
     help="Use the pre-trained checkpoint from Nucleus.",
 )
 parser.add_argument("--real-time", action="store_true", default=False, help="Run in real-time, if possible.")
+parser.add_argument(
+    "--low_level_policy", type=str, default=None, help="Path to pre-trained low-level policy for hierarchical navigation (e.g., logs/rsl_rl/h1_flat/exported/policy.pt)."
+)
 # append RSL-RL cli arguments
 cli_args.add_rsl_rl_args(parser)
 # append AppLauncher cli args
@@ -114,6 +117,12 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
 
     # set the log directory for the environment (works for all environment types)
     env_cfg.log_dir = log_dir
+
+    # override low-level policy path if provided (for hierarchical navigation)
+    if args_cli.low_level_policy is not None:
+        if hasattr(env_cfg, 'actions') and hasattr(env_cfg.actions, 'pre_trained_policy_action'):
+            env_cfg.actions.pre_trained_policy_action.policy_path = args_cli.low_level_policy
+            print(f"[INFO] Using low-level policy: {args_cli.low_level_policy}")
 
     # create isaac environment
     env = gym.make(args_cli.task, cfg=env_cfg, render_mode="rgb_array" if args_cli.video else None)

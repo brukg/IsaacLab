@@ -3,7 +3,4 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-"""Configurations for navigation environments."""
-
-from .anymal_c import *  # noqa: F401, F403
-from .h1 import *  # noqa: F401, F403
+"""Agent configurations for H1 navigation environments."""
