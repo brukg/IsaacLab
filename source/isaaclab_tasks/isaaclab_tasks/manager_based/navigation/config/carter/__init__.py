@@ -30,3 +30,27 @@ gym.register(
         "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:CarterNavigationPPORunnerCfg",
     },
 )
+
+##
+# Vision-based navigation with depth camera
+##
+
+gym.register(
+    id="Isaac-Navigation-Flat-Carter-Depth-v0",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.navigation_env_cfg:CarterNavigationDepthEnvCfg",
+        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_depth_cfg:CarterNavigationDepthCNNRunnerCfg",
+    },
+)
+
+gym.register(
+    id="Isaac-Navigation-Flat-Carter-Depth-Play-v0",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.navigation_env_cfg:CarterNavigationDepthEnvCfg_PLAY",
+        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_depth_cfg:CarterNavigationDepthCNNRunnerCfg",
+    },
+)
