@@ -35,10 +35,14 @@ LOW_LEVEL_ROUGH_ENV_CFG = H1RoughEnvCfg()
 
 
 def process_depth_image(env, sensor_cfg: SceneEntityCfg, data_type: str = "distance_to_image_plane"):
-    """Process depth camera observations.
+    """Process depth camera observations as 2D images.
 
     Processes raw depth camera data by clipping to a reasonable range,
-    handling NaN/Inf values, and flattening for network input.
+    handling NaN/Inf values, and returning as 2D images for CNN processing.
+
+    Returns:
+        torch.Tensor: Depth images of shape (B, 1, H, W) where B is batch size,
+                     1 is the channel dimension, H=53 and W=30 are image dimensions.
     """
     import torch
 
@@ -55,10 +59,19 @@ def process_depth_image(env, sensor_cfg: SceneEntityCfg, data_type: str = "dista
     output = torch.clip(output, near_clip, far_clip)
     output = output - near_clip
 
-    # Flatten for network input
-    result = output.reshape(env.num_envs, -1)
+    # Check if output already has a channel dimension at the end
+    # RayCasterCamera returns (B, H, W, 1) for single-channel data
+    if output.ndim == 4 and output.shape[-1] == 1:
+        # Remove the trailing channel dimension and add it at position 1
+        # (B, H, W, 1) -> (B, H, W) -> (B, 1, H, W)
+        output = output.squeeze(-1).unsqueeze(1)
+    elif output.ndim == 3:
+        # (B, H, W) -> (B, 1, H, W)
+        output = output.unsqueeze(1)
+    else:
+        raise RuntimeError(f"Unexpected depth sensor output shape: {output.shape}")
 
-    return result
+    return output
 
 
 @configclass
@@ -279,11 +292,10 @@ class H1NavigationDepthObservationsCfg:
         depth_measurement = ObsTerm(
             func=process_depth_image,
             params={"sensor_cfg": SceneEntityCfg("depth_camera"), "data_type": "distance_to_image_plane"},
-            noise=Unoise(n_min=-0.1, n_max=0.1),
         )
 
         def __post_init__(self):
-            self.concatenate_terms = True
+            self.concatenate_terms = False  # Return dict, extracted by runner
 
     # observation groups
     policy: PolicyCfg = PolicyCfg()
@@ -406,11 +418,10 @@ class H1NavigationDepthScannerObservationsCfg:
         depth_measurement = ObsTerm(
             func=process_depth_image,
             params={"sensor_cfg": SceneEntityCfg("depth_camera"), "data_type": "distance_to_image_plane"},
-            noise=Unoise(n_min=-0.1, n_max=0.1),
         )
 
         def __post_init__(self):
-            self.concatenate_terms = True
+            self.concatenate_terms = False  # Return dict, extracted by runner
 
     @configclass
     class ScannerCfg(ObsGroup):

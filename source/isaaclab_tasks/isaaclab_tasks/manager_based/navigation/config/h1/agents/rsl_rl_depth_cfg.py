@@ -34,10 +34,8 @@ class H1NavigationDepthCNNRunnerCfg(RslRlOnPolicyRunnerCfg):
         actor_hidden_dims=[512, 256, 128],
         critic_hidden_dims=[512, 256, 128],
         activation="elu",
-        # Proprio: base_lin_vel(3) + base_ang_vel(3) + projected_gravity(3) + pose_command(4) = 13
-        num_actor_obs_prop=13,
-        # Depth camera: 53×30 = 1590 pixels
-        obs_depth_shape=(53, 30),
+        # CNN configs are set via __post_init__ in RslRlActorCriticDepthCNNCfg
+        # Uses generic ActorCriticCNN with TensorDict observations
     )
 
     algorithm = RslRlPpoAlgorithmCfg(

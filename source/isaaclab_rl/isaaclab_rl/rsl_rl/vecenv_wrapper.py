@@ -139,6 +139,13 @@ class RslRlVecEnvWrapper(VecEnv):
     def reset(self) -> tuple[TensorDict, dict]:  # noqa: D102
         # reset the environment
         obs_dict, extras = self.env.reset()
+
+        # Flatten single-term observation groups (dicts with one key)
+        # This handles cases where concatenate_terms=False with only one term
+        for key, value in obs_dict.items():
+            if isinstance(value, dict) and len(value) == 1:
+                obs_dict[key] = next(iter(value.values()))
+
         return TensorDict(obs_dict, batch_size=[self.num_envs]), extras
 
     def get_observations(self) -> TensorDict:
@@ -147,6 +154,19 @@ class RslRlVecEnvWrapper(VecEnv):
             obs_dict = self.unwrapped.observation_manager.compute()
         else:
             obs_dict = self.unwrapped._get_observations()
+
+        # Flatten single-term observation groups (dicts with one key)
+        # This handles cases where concatenate_terms=False with only one term
+        for key, value in obs_dict.items():
+            if isinstance(value, dict):
+                print(f"[DEBUG] Observation '{key}' is a dict with keys: {list(value.keys())}")
+                if len(value) == 1:
+                    extracted = next(iter(value.values()))
+                    print(f"[DEBUG] Extracted '{key}' shape: {extracted.shape if hasattr(extracted, 'shape') else type(extracted)}")
+                    obs_dict[key] = extracted
+            else:
+                print(f"[DEBUG] Observation '{key}' shape: {value.shape if hasattr(value, 'shape') else type(value)}")
+
         return TensorDict(obs_dict, batch_size=[self.num_envs])
 
     def step(self, actions: torch.Tensor) -> tuple[TensorDict, torch.Tensor, torch.Tensor, dict]:
@@ -161,6 +181,13 @@ class RslRlVecEnvWrapper(VecEnv):
         # this is only needed for infinite horizon tasks
         if not self.unwrapped.cfg.is_finite_horizon:
             extras["time_outs"] = truncated
+
+        # Flatten single-term observation groups (dicts with one key)
+        # This handles cases where concatenate_terms=False with only one term
+        for key, value in obs_dict.items():
+            if isinstance(value, dict) and len(value) == 1:
+                obs_dict[key] = next(iter(value.values()))
+
         # return the step information
         return TensorDict(obs_dict, batch_size=[self.num_envs]), rew, dones, extras
 

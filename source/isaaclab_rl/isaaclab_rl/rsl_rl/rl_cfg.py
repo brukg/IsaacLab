@@ -97,10 +97,70 @@ class RslRlActorCriticHistoryCfg(RslRlPpoActorCriticCfg):
 
 @configclass
 class RslRlActorCriticDepthCNNCfg:
-    """Configuration for actor-critic networks with depth camera observations."""
+    """Configuration for actor-critic networks with depth camera observations using generic ActorCriticCNN."""
 
-    class_name: str = "ActorCriticDepthCNN"
-    """The policy class name. Default is ActorCriticDepthCNN."""
+    class_name: str = "ActorCriticCNN"
+    """The policy class name. Uses generic ActorCriticCNN."""
+
+    init_noise_std: float = MISSING
+    """The initial noise standard deviation for the policy."""
+
+    actor_obs_normalization: bool = False
+    """Whether to normalize 1D actor observations. Default is False."""
+
+    critic_obs_normalization: bool = False
+    """Whether to normalize 1D critic observations. Default is False."""
+
+    actor_hidden_dims: list[int] = MISSING
+    """The hidden dimensions of the actor MLP network."""
+
+    critic_hidden_dims: list[int] = MISSING
+    """The hidden dimensions of the critic MLP network."""
+
+    activation: str = MISSING
+    """The activation function for networks."""
+
+    actor_cnn_cfg: dict | None = None
+    """Configuration for actor CNN. If None, uses default depth CNN config."""
+
+    critic_cnn_cfg: dict | None = None
+    """Configuration for critic CNN. If None, uses default depth CNN config."""
+
+    def __post_init__(self):
+        """Set default CNN configs if not provided."""
+        # Default depth CNN configuration matching our DepthOnlyFCBackbone
+        if self.actor_cnn_cfg is None:
+            self.actor_cnn_cfg = {
+                "output_channels": [16, 32],  # 2 conv layers
+                "kernel_size": [5, 3],        # Kernel sizes
+                "stride": 1,                   # Stride 1
+                "padding": "none",             # No padding (reduces dims)
+                "activation": self.activation if hasattr(self, 'activation') and self.activation != MISSING else "elu",
+                "max_pool": [True, True],      # Max pool after each conv
+                "flatten": True,               # Must flatten for MLP
+            }
+        if self.critic_cnn_cfg is None:
+            self.critic_cnn_cfg = {
+                "output_channels": [16, 32],
+                "kernel_size": [5, 3],
+                "stride": 1,
+                "padding": "none",
+                "activation": self.activation if hasattr(self, 'activation') and self.activation != MISSING else "elu",
+                "max_pool": [True, True],
+                "flatten": True,
+            }
+
+
+@configclass
+class RslRlActorCriticDepthCNNRecurrentCfg:
+    """Configuration for actor-critic networks with depth camera and recurrent layers.
+
+    Note: Currently uses custom ActorCriticDepthCNNRecurrent implementation.
+    TODO: Migrate to generic ActorCriticCNNRecurrent when available in rsl_rl.
+    """
+
+    class_name: str = "ActorCriticDepthCNNRecurrent"
+    """The policy class name. Uses custom ActorCriticDepthCNNRecurrent."""
 
     init_noise_std: float = MISSING
     """The initial noise standard deviation for the policy."""
@@ -112,21 +172,13 @@ class RslRlActorCriticDepthCNNCfg:
     """The hidden dimensions of the critic network."""
 
     activation: str = MISSING
-    """The activation function for the actor and critic networks."""
+    """The activation function for networks."""
 
-    num_actor_obs_prop: int = 48
-    """Number of proprioceptive observations (without depth). Default is 48."""
+    num_actor_obs_prop: int = 13
+    """Number of proprioceptive observations (without depth). Default is 13 for navigation."""
 
     obs_depth_shape: tuple[int, int] = (53, 30)
-    """Shape of depth observations (height, width). Default is (53, 30) to match legged-loco."""
-
-
-@configclass
-class RslRlActorCriticDepthCNNRecurrentCfg(RslRlActorCriticDepthCNNCfg):
-    """Configuration for actor-critic networks with depth camera and recurrent layers."""
-
-    class_name: str = "ActorCriticDepthCNNRecurrent"
-    """The policy class name. Default is ActorCriticDepthCNNRecurrent."""
+    """Shape of depth observations (height, width). Default is (53, 30)."""
 
     rnn_type: str = "lstm"
     """The type of RNN to use. Either 'lstm' or 'gru'. Default is 'lstm'."""
@@ -140,8 +192,8 @@ class RslRlActorCriticDepthCNNRecurrentCfg(RslRlActorCriticDepthCNNCfg):
     rnn_num_layers: int = 1
     """The number of RNN layers. Default is 1."""
 
-    num_critic_obs_prop: int = 48
-    """Number of critic proprioceptive observations (without depth). Default is 48."""
+    num_critic_obs_prop: int = 13
+    """Number of critic proprioceptive observations (without depth). Default is 13."""
 
 
 ############################
