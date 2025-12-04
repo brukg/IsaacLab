@@ -25,3 +25,31 @@ def heading_command_error_abs(env: ManagerBasedRLEnv, command_name: str) -> torc
     command = env.command_manager.get_command(command_name)
     heading_b = command[:, 3]
     return heading_b.abs()
+
+
+def velocity_near_goal_penalty(
+    env: ManagerBasedRLEnv, distance_threshold: float, command_name: str
+) -> torch.Tensor:
+    """Penalize high velocities when close to the goal position.
+
+    This encourages the robot to slow down as it approaches the target.
+    """
+    from isaaclab.assets import Articulation
+
+    # Get the robot asset
+    robot: Articulation = env.scene["robot"]
+
+    # Get command to compute distance to goal
+    command = env.command_manager.get_command(command_name)
+    des_pos_b = command[:, :3]
+    distance = torch.norm(des_pos_b[:, :2], dim=1)  # Only XY distance
+
+    # Get current velocity magnitude
+    velocity = robot.data.root_lin_vel_b
+    velocity_magnitude = torch.norm(velocity[:, :2], dim=1)  # Only XY velocity
+
+    # Apply penalty only when close to goal
+    near_goal = distance < distance_threshold
+    penalty = torch.where(near_goal, velocity_magnitude, torch.zeros_like(velocity_magnitude))
+
+    return penalty
