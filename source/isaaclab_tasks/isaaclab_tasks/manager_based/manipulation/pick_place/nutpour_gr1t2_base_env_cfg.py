@@ -159,10 +159,11 @@ class ObjectTableSceneCfg(InteractiveSceneCfg):
     )
 
     # Set table view camera
+    # NOTE: GR00T GR1 model expects 256x256 images (ego_view_bg_crop_pad_res256_freq20)
     robot_pov_cam = CameraCfg(
         prim_path="{ENV_REGEX_NS}/RobotPOVCam",
         update_period=0.0,
-        height=160,
+        height=256,
         width=256,
         data_types=["rgb"],
         spawn=sim_utils.PinholeCameraCfg(focal_length=18.15, clipping_range=(0.1, 2)),
