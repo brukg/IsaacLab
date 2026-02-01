@@ -1,12 +1,15 @@
 Changelog
 ---------
 
-0.54.1 (2026-01-26)
+0.54.3 (2026-02-01)
 ~~~~~~~~~~~~~~~~~~~
 
 Added
 ^^^^^
 
+* Added Fabric backend support to :class:`~isaaclab.sim.views.XformPrimView` for GPU-accelerated
+  batch transform operations on all Boundable prims using Warp kernels.
+* Added :mod:`~isaaclab.sim.utils.fabric_utils` module with Warp kernels for efficient Fabric matrix operations.
 * Added :class:`~isaaclab.devices.openxr.BodyOscReceiver` for receiving body tracking data from Meta Quest 3 via OSC protocol.
 * Added support for Meta Quest 3 body tracking in :class:`~isaaclab.devices.OpenXRDevice` with configurable OSC port via ``body_osc_port`` parameter.
 * Added ``BODY`` tracking target to :class:`~isaaclab.devices.DeviceBase` for full-body teleoperation.
@@ -17,7 +20,33 @@ Added
 Changed
 ^^^^^^^
 
+* Changed :class:`~isaaclab.sensors.camera.Camera` to use Fabric backend for faster pose queries.
 * Improved :class:`~isaaclab.devices.humanoid.GR1T2Retargeter` with pre-computed joint index mappings for better performance.
+
+
+0.54.2 (2026-01-28)
+~~~~~~~~~~~~~~~~~~~
+
+Changed
+^^^^^^^
+
+* Moved :mod:`isaaclab.sensors.tacsl_sensor` to :mod:`isaaclab_contrib.sensors.tacsl_sensor` module,
+  since it is not completely ready for release yet.
+
+
+0.54.1 (2026-01-25)
+~~~~~~~~~~~~~~~~~~~
+
+Added
+^^^^^
+
+* Added test suite for ray caster patterns with comprehensive parameterized tests.
+
+Fixed
+^^^^^
+
+* Fixed incorrect horizontal angle calculation in :func:`~isaaclab.sensors.ray_caster.patterns.patterns.lidar_pattern`
+  that caused the actual angular resolution to differ from the requested resolution.
 
 
 0.54.0 (2026-01-13)
