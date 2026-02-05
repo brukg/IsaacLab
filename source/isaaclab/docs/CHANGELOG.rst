@@ -1,7 +1,7 @@
 Changelog
 ---------
 
-0.54.3 (2026-02-01)
+0.54.4 (2026-02-01)
 ~~~~~~~~~~~~~~~~~~~
 
 Added
@@ -22,6 +22,18 @@ Changed
 
 * Changed :class:`~isaaclab.sensors.camera.Camera` to use Fabric backend for faster pose queries.
 * Improved :class:`~isaaclab.devices.humanoid.GR1T2Retargeter` with pre-computed joint index mappings for better performance.
+
+0.54.3 (2026-02-04)
+~~~~~~~~~~~~~~~~~~~
+
+Fixed
+^^^^^
+
+* Fixed :class:`~isaaclab.envs.mdp.actions.JointPositionToLimitsAction` and
+  :class:`~isaaclab.envs.mdp.actions.EMAJointPositionToLimitsAction` ignoring
+  ``preserve_order=True`` when the number of specified joints matches the total
+  number of joints in the asset. The optimization that replaced joint indices with
+  ``slice(None)`` now correctly checks for the ``preserve_order`` flag.
 
 
 0.54.2 (2026-01-28)
